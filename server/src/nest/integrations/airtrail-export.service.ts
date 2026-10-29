@@ -32,12 +32,18 @@ export class AirtrailExportService {
     if (!payload) throw new AirtrailRequestError('Only complete, unlinked single-leg flights can be exported', 400);
 
     const existing = await this.client.listFlights(creds);
-    const duplicates = existing.filter((f) =>
-      (f.from?.iata ?? f.from?.icao) === payload.from &&
-      (f.to?.iata ?? f.to?.icao) === payload.to &&
-      (f.departureScheduled ?? f.departure ?? '').slice(0, 10) === payload.departure &&
-      f.flightNumber === payload.flightNumber,
-    );
+    // A missing flight number is not a safe identity key. Compare route and
+    // local departure date/time as well as the number to avoid false matches.
+    const duplicates = existing.filter((f) => {
+      const from = (f.from?.iata ?? f.from?.icao ?? '').toUpperCase();
+      const to = (f.to?.iata ?? f.to?.icao ?? '').toUpperCase();
+      const departure = f.departureScheduled ?? f.departure;
+      return Boolean(payload.flightNumber && f.flightNumber) &&
+        from === payload.from &&
+        to === payload.to &&
+        departure?.slice(0, 10) === payload.departure &&
+        f.flightNumber?.trim().toUpperCase() === payload.flightNumber?.trim().toUpperCase();
+    });
     if (duplicates.length) throw new AirtrailRequestError('Matching AirTrail flight already exists', 409);
 
     if (!(await this.reservations.claimAirtrailExport(reservationId, tripId, userId))) {
