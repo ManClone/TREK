@@ -93,7 +93,7 @@ export class AirtrailController {
       return await this.exporter.exportFlight(body.tripId, body.reservationId, user.id);
     } catch (err: unknown) {
       if (err instanceof AirtrailRequestError) {
-        throw new HttpException({ error: err.message }, err.status >= 400 && err.status <= 599 ? err.status : 502);
+        throw new HttpException({ error: err.message }, typeof err.status === 'number' && err.status >= 400 && err.status <= 599 ? err.status : 502);
       }
       throw err;
     }
