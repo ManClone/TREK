@@ -5,6 +5,7 @@ import { RequireAddon } from '../addons/require-addon.decorator';
 import { getClientIp } from '../audit/client-ip';
 import { CurrentUser } from '../auth-core/current-user.decorator';
 import { JwtAuthGuard } from '../auth-core/jwt-auth.guard';
+import { AirtrailExportService } from './airtrail-export.service';
 import { AirtrailSyncService } from './airtrail-sync.service';
 import { AirtrailSettingsDto } from './airtrail.dto';
 import { AirtrailService } from './airtrail.service';
@@ -27,6 +28,7 @@ export class AirtrailController {
   constructor(
     private readonly airtrail: AirtrailService,
     private readonly syncService: AirtrailSyncService,
+    private readonly exporter: AirtrailExportService,
   ) {}
 
   @Get('settings')
@@ -72,6 +74,16 @@ export class AirtrailController {
   @HttpCode(200)
   sync(@CurrentUser() user: User) {
     return this.syncService.runAirtrailSyncForUser(user.id);
+  }
+
+  /** Explicit export; trip permissions are checked by the reservation domain. */
+  @Post('export')
+  @HttpCode(200)
+  async export(@CurrentUser() user: User, @Body() body: { tripId: number; reservationId: number }) {
+    if (!Number.isSafeInteger(body?.tripId) || !Number.isSafeInteger(body?.reservationId)) {
+      throw new HttpException({ error: 'Valid tripId and reservationId required' }, 400);
+    }
+    return this.exporter.exportFlight(body.tripId, body.reservationId, user.id);
   }
 
   @Post('test')
