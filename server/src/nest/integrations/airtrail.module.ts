@@ -5,6 +5,7 @@ import { Reservations } from '../../db/entities/Reservations.entity';
 import { AddonsModule } from '../addons/addons.module';
 import { AuditModule } from '../audit/audit.module';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { ReservationsReadModule } from '../reservations/reservations-read.module';
 import { ReservationsModule } from '../reservations/reservations.module';
 import { SchedulingModule } from '../scheduling/scheduling.module';
 import { AirtrailCoreModule } from './airtrail-core.module';
@@ -45,6 +46,7 @@ import { Module } from '@nestjs/common';
     AddonsModule,
     AuditModule,
     ReservationsModule,
+    ReservationsReadModule,
     SchedulingModule,
     MikroOrmModule.forFeature([Reservations, ReservationEndpoints, Days, AppSettings]),
   ],
