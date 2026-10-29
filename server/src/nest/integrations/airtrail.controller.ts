@@ -6,6 +6,7 @@ import { getClientIp } from '../audit/client-ip';
 import { CurrentUser } from '../auth-core/current-user.decorator';
 import { JwtAuthGuard } from '../auth-core/jwt-auth.guard';
 import { ReservationsService } from '../reservations/reservations.service';
+import { AirtrailRequestError } from './airtrail.client';
 import { AirtrailExportService } from './airtrail-export.service';
 import { AirtrailSyncService } from './airtrail-sync.service';
 import { AirtrailSettingsDto } from './airtrail.dto';
@@ -88,7 +89,14 @@ export class AirtrailController {
     const trip = await this.reservations.verifyTripAccess(body.tripId, user.id);
     if (!trip) throw new HttpException({ error: 'Trip not found' }, 404);
     if (!(await this.reservations.canEdit(trip, user))) throw new HttpException({ error: 'Forbidden' }, 403);
-    return this.exporter.exportFlight(body.tripId, body.reservationId, user.id);
+    try {
+      return await this.exporter.exportFlight(body.tripId, body.reservationId, user.id);
+    } catch (err: unknown) {
+      if (err instanceof AirtrailRequestError) {
+        throw new HttpException({ error: err.message }, err.status >= 400 && err.status <= 599 ? err.status : 502);
+      }
+      throw err;
+    }
   }
 
   @Post('test')
