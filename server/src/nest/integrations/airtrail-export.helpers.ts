@@ -8,7 +8,7 @@ import type { AirtrailSavePayload, AirtrailPassengerWrite } from './airtrail.cli
  * The caller must enforce authorization, duplicate checks, and persist the link.
  */
 export function buildCreateFlightPayload(reservation: any): AirtrailSavePayload | null {
-  if (reservation.type !== 'flight') return null;
+  if (reservation.type !== 'flight' || reservation.external_source || reservation.external_id) return null;
   const metadata = decodeJson(RESERVATION_METADATA, reservation.metadata, `reservation ${reservation.id}`);
   if (Array.isArray(metadata.legs) && metadata.legs.length > 1) return null;
   const endpoints: any[] = reservation.endpoints ?? [];
@@ -48,7 +48,7 @@ export function buildCreateFlightPayload(reservation: any): AirtrailSavePayload 
 
 function splitFlightDate(value: unknown): { date: string; time: string } | null {
   if (typeof value !== 'string') return null;
-  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(value);
+  const match = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/.exec(value);
   if (!match) return null;
   return { date: match[1], time: match[2] };
 }
