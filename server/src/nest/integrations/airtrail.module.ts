@@ -8,6 +8,7 @@ import { PermissionsModule } from '../permissions/permissions.module';
 import { ReservationsModule } from '../reservations/reservations.module';
 import { SchedulingModule } from '../scheduling/scheduling.module';
 import { AirtrailCoreModule } from './airtrail-core.module';
+import { AirtrailExportService } from './airtrail-export.service';
 import { AirtrailImportService } from './airtrail-import.service';
 import { AirtrailSyncJob } from './airtrail-sync.job';
 import { AirtrailSyncService } from './airtrail-sync.service';
@@ -48,7 +49,7 @@ import { Module } from '@nestjs/common';
     MikroOrmModule.forFeature([Reservations, ReservationEndpoints, Days, AppSettings]),
   ],
   controllers: [AirtrailController],
-  providers: [AirtrailSyncService, AirtrailSyncJob, AirtrailImportService, AirtrailMcp],
+  providers: [AirtrailExportService, AirtrailSyncService, AirtrailSyncJob, AirtrailImportService, AirtrailMcp],
   exports: [AirtrailSyncService, AirtrailImportService],
 })
 export class AirtrailModule {}
