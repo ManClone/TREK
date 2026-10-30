@@ -9,7 +9,7 @@ import { ReservationsService } from '../reservations/reservations.service';
 import { AirtrailRequestError } from './airtrail.client';
 import { AirtrailExportService } from './airtrail-export.service';
 import { AirtrailSyncService } from './airtrail-sync.service';
-import { AirtrailSettingsDto } from './airtrail.dto';
+import { AirtrailExportDto, AirtrailSettingsDto } from './airtrail.dto';
 import { AirtrailService } from './airtrail.service';
 import { Body, Controller, Get, HttpCode, HttpException, Post, Put, Req, UseGuards } from '@nestjs/common';
 
@@ -82,7 +82,7 @@ export class AirtrailController {
   /** Explicit export; trip permissions are checked by the reservation domain. */
   @Post('export')
   @HttpCode(200)
-  async export(@CurrentUser() user: User, @Body() body: { tripId: number; reservationId: number }) {
+  async export(@CurrentUser() user: User, @Body() body: AirtrailExportDto) {
     if (!Number.isSafeInteger(body?.tripId) || !Number.isSafeInteger(body?.reservationId)) {
       throw new HttpException({ error: 'Valid tripId and reservationId required' }, 400);
     }
