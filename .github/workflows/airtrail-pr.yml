@@ -2,7 +2,7 @@ name: AirTrail export PR validation
 
 on:
   pull_request:
-    branches: [main]
+    branches: [dev]
     paths:
       - 'server/src/nest/integrations/airtrail*'
       - 'server/src/db/repositories/Reservations.repository.ts'
