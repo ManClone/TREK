@@ -27,7 +27,7 @@ function setup() {
       flightNumber: 'DE1750', passengers: [],
     }),
   };
-  const service = new AirtrailExportService(repo as any, reads as any, airtrail as any, client as any);
+  const service = new AirtrailExportService(repo as unknown as ConstructorParameters<typeof AirtrailExportService>[0], reads as unknown as ConstructorParameters<typeof AirtrailExportService>[1], airtrail as unknown as ConstructorParameters<typeof AirtrailExportService>[2], client as unknown as ConstructorParameters<typeof AirtrailExportService>[3]);
   return { service, repo, reads, airtrail, client };
 }
 describe('AirtrailExportService', () => {
