@@ -77,6 +77,20 @@ describe('AirtrailExportService', () => {
     await expect(service.exportFlight(9, 72, 1)).rejects.toThrow('manual reconciliation');
     expect(repo.finishAirtrailExport).not.toHaveBeenCalled();
   });
+  it('requires manual reconciliation if persisting the AirTrail link fails', async () => {
+    const { service, repo, client } = setup();
+    repo.finishAirtrailExport.mockResolvedValue(false);
+    await expect(service.exportFlight(9, 72, 1)).rejects.toThrow('manual reconciliation');
+    expect(client.saveFlight).toHaveBeenCalledOnce();
+    expect(repo.finishAirtrailExport).toHaveBeenCalledOnce();
+  });
+  it('does not export an incomplete flight', async () => {
+    const { service, reads, repo, client } = setup();
+    reads.getReservationWithJoins.mockResolvedValue({ ...reservation, reservation_end_time: null });
+    await expect(service.exportFlight(9, 72, 1)).rejects.toThrow('Only complete');
+    expect(repo.claimAirtrailExport).not.toHaveBeenCalled();
+    expect(client.saveFlight).not.toHaveBeenCalled();
+  });
   it('leaves the pending claim after an uncertain remote result', async () => {
     const { service, repo, client } = setup();
     client.saveFlight.mockRejectedValue(new Error('connection lost'));
