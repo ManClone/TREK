@@ -1385,6 +1385,37 @@ export class ReservationsRepository extends TrekRepository<Reservations> {
     await this.nativeUpdate({ id }, { external_source: 'airtrail', external_id, external_owner_user_id, sync_enabled: 1, external_hash, external_synced_at });
   }
 
+  /**
+   * Claim an unlinked reservation for an explicit AirTrail export.
+   * The conditional update prevents two concurrent requests from both claiming it.
+   * A pending claim must be reconciled manually if the remote save succeeds but
+   * the response or final link write fails; never blindly retry creation.
+   */
+  async claimAirtrailExport(id: number, tripId: number, ownerId: number): Promise<boolean> {
+    const changed = await this.nativeUpdate(
+      { id, trip: tripId, type: 'flight', external_source: null, external_id: null },
+      { external_source: 'airtrail_export_pending', external_owner_user_id: ownerId, sync_enabled: 0 },
+    );
+    return changed === 1;
+  }
+
+  /** Complete a claimed export only if this owner still owns the pending claim. */
+  async finishAirtrailExport(
+    id: number, ownerId: number, externalId: string, hash: string,
+  ): Promise<boolean> {
+    const changed = await this.nativeUpdate(
+      { id, external_source: 'airtrail_export_pending', external_owner_user_id: ownerId },
+      {
+        external_source: 'airtrail',
+        external_id: externalId,
+        sync_enabled: 1,
+        external_hash: hash,
+        external_synced_at: new Date().toISOString(),
+      },
+    );
+    return changed === 1;
+  }
+
   /** ATL2 (`airtrail-link.service.ts#detach`) — `UPDATE reservations SET sync_enabled = 0 WHERE id = ?`. */
   async setAirtrailSyncDisabled(id: number): Promise<void> {
     await this.nativeUpdate({ id }, { sync_enabled: 0 });

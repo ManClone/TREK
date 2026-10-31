@@ -6,6 +6,13 @@
 import { airtrailImportSchema, airtrailSettingsSchema } from '@trek/shared';
 
 import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
 export class AirtrailSettingsDto extends createZodDto(airtrailSettingsSchema) {}
 export class AirtrailImportDto extends createZodDto(airtrailImportSchema) {}
+
+/** Validate explicit single-flight export requests through the global Zod pipe. */
+export class AirtrailExportDto extends createZodDto(z.object({
+  tripId: z.number().int().positive(),
+  reservationId: z.number().int().positive(),
+}).strict()) {}
