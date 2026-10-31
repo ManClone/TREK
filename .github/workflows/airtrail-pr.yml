@@ -29,6 +29,8 @@ jobs:
       - name: Typecheck server
         run: npm run typecheck --workspace=server
       - name: Typecheck server tests
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: npm run typecheck:tests --workspace=server
       - name: AirTrail export unit tests
         run: npm run test --workspace=server -- src/nest/integrations/airtrail-export.helpers.spec.ts src/nest/integrations/airtrail-export.service.spec.ts
