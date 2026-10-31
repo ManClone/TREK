@@ -7,11 +7,11 @@ import type { AirtrailSavePayload, AirtrailPassengerWrite } from './airtrail.cli
  * This is intentionally separate from buildSavePayload (which is update-only).
  * The caller must enforce authorization, duplicate checks, and persist the link.
  */
-export function buildCreateFlightPayload(reservation: any): AirtrailSavePayload | null {
+export function buildCreateFlightPayload(reservation: { id: number; type: string; external_source?: string | null; external_id?: string | null; metadata: string | null; endpoints?: Array<{ role: string; code: string }>; reservation_time: unknown; reservation_end_time: unknown; notes?: string | null }): AirtrailSavePayload | null {
   if (reservation.type !== 'flight' || reservation.external_source || reservation.external_id) return null;
   const metadata = decodeJson(RESERVATION_METADATA, reservation.metadata, `reservation ${reservation.id}`);
   if (Array.isArray(metadata.legs) && metadata.legs.length > 1) return null;
-  const endpoints: any[] = reservation.endpoints ?? [];
+  const endpoints = reservation.endpoints ?? [];
   if (endpoints.length !== 2) return null;
   const from = endpoints.find((e) => e.role === 'from')?.code;
   const to = endpoints.find((e) => e.role === 'to')?.code;
